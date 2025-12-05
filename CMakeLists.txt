@@ -8,13 +8,8 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 add_executable(appInventurverwaltung
     main.cpp
-)
-
-qt_add_qml_module(appInventurverwaltung
-    URI Inventurverwaltung
-    QML_FILES
-        Main.qml
-        SOURCES cmanager_inventurverwaltung.h cmanager_inventurverwaltung.cpp
+    cmanager_inventurverwaltung.cpp
+    cmanager_inventurverwaltung.h
 )
 
 
