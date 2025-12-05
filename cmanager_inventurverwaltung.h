@@ -29,6 +29,7 @@ struct structPerson
     QString strName = "";
     QString strVorname = "";
     int iRolle = 0;
+    QString strPasswort = ""; //Verhasht
 };
 
 struct structGruppe
@@ -94,42 +95,63 @@ public:
     ~cMANAGER_InventurVERWALTUNG();
     QSqlDatabase* Getdb() const { return const_cast<QSqlDatabase*>(&m_db);}
 
+    // Hilfsfunktion für SQL-Ausführung
+    bool ExecuteSomeSQL(QString strSQL); // NEU
+
     // Gegenstaende
     vecGegenstaende* getvecGegenstaende() const { return const_cast<vecGegenstaende*>(&m_vecGegenstaende); }
     void FillVecGegenstaende();
+    bool UpdateGegenstand(structGegenstand& gegenstand); // NEU
+    bool InsertGegenstand(structGegenstand& gegenstand); // NEU
 
     // Person
     vecPerson* GetvecPerson() const { return const_cast<vecPerson*>(&m_vecPerson); }
-    void FillVecPerson(); // NEU
+    void FillVecPerson();
+    bool UpdatePerson(structPerson& person); // NEU
+    bool InsertPerson(structPerson& person); // NEU
 
     // Rolle
-    vecRolle* GetvecRolle() const { return const_cast<vecRolle*>(&m_vecRolle); } // NEU
-    void FillVecRolle(); // NEU
+    vecRolle* GetvecRolle() const { return const_cast<vecRolle*>(&m_vecRolle); }
+    void FillVecRolle();
+    bool UpdateRolle(structRolle& rolle); // NEU
+    bool InsertRolle(structRolle& rolle); // NEU
 
     // Gruppe
     vecGruppe* GetvecGruppe() const { return const_cast<vecGruppe*>(&m_vecGruppe); }
-    void FillVecGruppe(); // NEU
+    void FillVecGruppe();
+    bool UpdateGruppe(structGruppe& gruppe); // NEU
+    bool InsertGruppe(structGruppe& gruppe); // NEU
 
     // Status
-    vecStatus* GetvecStatus() const { return const_cast<vecStatus*>(&m_vecStatus); } // NEU
-    void FillVecStatus(); // NEU
+    vecStatus* GetvecStatus() const { return const_cast<vecStatus*>(&m_vecStatus); }
+    void FillVecStatus();
+    bool UpdateStatus(structStatus& status); // NEU
+    bool InsertStatus(structStatus& status); // NEU
 
     // Fach
-    vecFach* GetvecFach() const { return const_cast<vecFach*>(&m_vecFach); } // NEU
-    void FillVecFach(); // NEU
+    vecFach* GetvecFach() const { return const_cast<vecFach*>(&m_vecFach); }
+    void FillVecFach();
+    bool UpdateFach(structFach& fach); // NEU
+    bool InsertFach(structFach& fach); // NEU
 
     // Eigenschaft
-    vecEigenschaft* GetvecEigenschaft() const { return const_cast<vecEigenschaft*>(&m_vecEigenschaft); } // NEU
-    void FillVecEigenschaft(); // NEU
+    vecEigenschaft* GetvecEigenschaft() const { return const_cast<vecEigenschaft*>(&m_vecEigenschaft); }
+    void FillVecEigenschaft();
+    bool UpdateEigenschaft(structEigenschaft& eigenschaft); // NEU
+    bool InsertEigenschaft(structEigenschaft& eigenschaft); // NEU
 
     // Abteilung
-    vecAbteilung* GetvecAbteilung() const { return const_cast<vecAbteilung*>(&m_vecAbteilung); } // NEU
-    void FillVecAbteilung(); // NEU
+    vecAbteilung* GetvecAbteilung() const { return const_cast<vecAbteilung*>(&m_vecAbteilung); }
+    void FillVecAbteilung();
+    bool UpdateAbteilung(structAbteilung& abteilung); // NEU
+    bool InsertAbteilung(structAbteilung& abteilung); // NEU
 
     // Standort
-    vecStandort* GetvecStandort() const { return const_cast<vecStandort*>(&m_vecStandort); } // NEU
-    void FillVecStandort(); // NEU
-
+    vecStandort* GetvecStandort() const { return const_cast<vecStandort*>(&m_vecStandort); }
+    void FillVecStandort();
+    bool UpdateStandort(structStandort& standort); // NEU
+    bool InsertStandort(structStandort& standort); // NEU
+    bool Anmelden(QString strbenutzername, QString strPasswort);
 protected:
     QSqlDatabase m_db;
 
