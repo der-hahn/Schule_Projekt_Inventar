@@ -1,18 +1,13 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include "mainwindow.h"
+
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-    QQmlApplicationEngine engine;
-    QObject::connect(
-        &engine,
-        &QQmlApplicationEngine::objectCreationFailed,
-        &app,
-        []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection);
-    engine.loadFromModule("Inventurverwaltung", "Main");
+    MainWindow win;
+    win.show();
 
     return app.exec();
 }
