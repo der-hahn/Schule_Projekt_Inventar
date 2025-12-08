@@ -8,7 +8,7 @@
 cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
 {
     m_db = QSqlDatabase::addDatabase("QODBC");
-    m_db.setDatabaseName("Driver={SQL Server};Server=herteltlaptop;database=kisdb_demo_20230808;username=dba;password=sqlosk");
+    m_db.setDatabaseName("Driver={SQL Server};Server=herteltlaptop;database=kisdb_demo_20230808;Uid=dba;pwd=sqlosk");
     if(!m_db.open())
     {
         QMessageBox msg;
@@ -185,7 +185,7 @@ void cMANAGER_InventurVERWALTUNG::FillVecZustaende()
 
 void cMANAGER_InventurVERWALTUNG::FillVecAbteilungen()
 {
-    QString strsql = "select * from ABTEILUNG";
+    QString strsql = "select * from ABTEILUNG_ABT";
     QSqlQuery query(m_db);
     query.prepare(strsql);
     query.exec();

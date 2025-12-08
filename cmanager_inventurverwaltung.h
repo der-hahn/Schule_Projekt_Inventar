@@ -143,8 +143,10 @@ public:
     bool SpeicherBereich(structBereich& bereich); // NEU/GEÄNDERT
 
     bool Anmelden(QString strbenutzername, QString strPasswort);
-protected:
+public:
     QSqlDatabase m_db;
+
+protected:
 
     vecGegenstaende m_vecGegenstaende;
     vecPersonen m_vecPersonen;

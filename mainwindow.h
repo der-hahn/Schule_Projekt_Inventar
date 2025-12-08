@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <qsqltablemodel.h>
 #include <QTableView>
+#include <qstandarditemmodel.h>
+#include <qsortfilterproxymodel.h>
+#include "cmanager_inventurverwaltung.h"
 namespace Ui {
 class MainWindow;
 }
@@ -22,11 +25,15 @@ public:
     void onExportCsv();
     void onSearchChanged(const QString &text);
     void setupTabs();
+
+    void refreshTables();
 private:
     Ui::MainWindow *ui;
     QStringList statusList;
-    QList<QSqlTableModel*> tableModels;
-    QList<QTableView*> tableViews;
+    cMANAGER_InventurVERWALTUNG m_manager;
+    QVector<QStandardItemModel*> tableModels;
+    QVector<QTableView*> tableViews;
+    QVector<QSortFilterProxyModel*> proxyModels;
 
 };
 
