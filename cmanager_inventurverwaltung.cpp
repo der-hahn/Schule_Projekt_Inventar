@@ -8,7 +8,7 @@
 cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
 {
     m_db = QSqlDatabase::addDatabase("QODBC");
-    m_db.setDatabaseName("Driver={SQL Server};Server=herteltlaptop;database=kisdb_demo_20230808;username=dba;password=sqlosk");
+    m_db.setDatabaseName("Driver={SQL Server};Server=herteltlaptop;database=kisdb_demo_20230808;uid=dba;pwd=sqlosk");
     if(!m_db.open())
     {
         QMessageBox msg;
@@ -49,11 +49,19 @@ bool cMANAGER_InventurVERWALTUNG::ExecuteSomeSQL(const QSqlQuery& query)
 // 1. DATEN FÜLLEN (FillVec...) (BLEIBEN UNVERÄNDERT)
 // ------------------------------------
 
-void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende()
+void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende(int izustandid/*=0*/)
 {
-    QString strsql = "select * from GEGENSTAENDE";
+    QString strsql = "select * from GEGENSTAENDE where 1=1";
+
+    if(izustandid > 0)
+        strsql += " and ZUSTAND_ID = :zuid";
+
+
     QSqlQuery query(m_db);
     query.prepare(strsql);
+
+    query.bindValue(":zuid", izustandid);
+
     query.exec();
     if(query.lastError().isValid())
     {
