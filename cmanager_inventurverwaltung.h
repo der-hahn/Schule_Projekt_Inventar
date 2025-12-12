@@ -25,12 +25,6 @@ struct structGegenstand
     int ZUSTAND_ID = 0;
 };
 
-struct structRolle
-{
-    int iID = 0;
-    QString strBez = "";
-};
-
 struct structPerson
 {
     int iPERSONEN_ID = 0;
@@ -84,7 +78,6 @@ struct structBereich
 
 typedef std::vector<structGegenstand> vecGegenstaende;
 typedef std::vector<structPerson> vecPersonen;
-typedef std::vector<structRolle> vecRollen;
 typedef std::vector<structGruppe> vecGruppen;
 typedef std::vector<structZustand> vecZustaende;
 typedef std::vector<structAbteilung> vecAbteilungen;
@@ -112,10 +105,6 @@ public:
     void FillVecPersonen();
     bool SpeicherPerson(structPerson& person); // NEU/GEÄNDERT
 
-    // Rolle
-    vecRollen* GetvecRollen() const { return const_cast<vecRollen*>(&m_vecRollen); }
-    void FillVecRollen();
-    bool SpeicherRolle(structRolle& rolle); // NEU/GEÄNDERT
 
     // Gruppe
     vecGruppen* GetvecGruppen() const { return const_cast<vecGruppen*>(&m_vecGruppen); }
@@ -146,6 +135,14 @@ public:
 public:
     QSqlDatabase m_db;
 
+    bool LoescheGegenstand(int gegenstandid);
+    bool Loeschevontabelle(int ipk, QString strtabname);
+    bool LoeschePerson(int ipersonid);
+    bool LoescheBereich(int ibereichid);
+    bool LoescheStandort(int istandortid);
+    bool LoescheAbteilung(int iabteilungid);
+    bool LoescheZustand(int izustandid);
+    bool LoescheGruppe(int igruppenid);
 protected:
 
     vecGegenstaende m_vecGegenstaende;
