@@ -114,6 +114,8 @@ void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende(int izustandid/*=0*/)
         gegenstand.ANGESCHAFFT_AM = query.value("ANGESCHAFFT_AM").toDate();
         gegenstand.NOTIZ = query.value("NOTIZ").toString();
         gegenstand.ZUSTAND_ID = query.value("ZUSTAND_ID").toInt();
+        gegenstand.iVerantwortlicher_ID = query.value("Verantwortlicher_ID").toInt();
+
         m_vecGegenstaende.push_back(gegenstand);
     }
 }

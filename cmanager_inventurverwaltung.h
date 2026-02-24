@@ -23,6 +23,7 @@ struct structGegenstand
     QDate ANGESCHAFFT_AM;
     QString NOTIZ = "";
     int ZUSTAND_ID = 0;
+    int iVerantwortlicher_ID = 0;
 };
 
 struct structPerson
@@ -147,7 +148,6 @@ protected:
 
     vecGegenstaende m_vecGegenstaende;
     vecPersonen m_vecPersonen;
-    vecRollen m_vecRollen;
     vecGruppen m_vecGruppen;
     vecZustaende m_vecZustaende;
     vecAbteilungen m_vecAbteilungen;
