@@ -62,6 +62,30 @@ bool cMANAGER_InventurVERWALTUNG::ExecuteSomeSQL(const QSqlQuery& query)
 // 1. DATEN FÜLLEN (FillVec...) (BLEIBEN UNVERÄNDERT)
 // ------------------------------------
 
+
+QString cMANAGER_InventurVERWALTUNG::GetVerantwortlicherName(int iverantwortlicherid)
+{
+    QString strsql = "select LEFT(VORNAME, 1) + '.' + NAME ganzname from PERSON where PERSONEN_ID = " + QString::number(iverantwortlicherid);
+
+    QSqlQuery query(m_db);
+    query.prepare(strsql);
+
+    query.exec();
+    if(query.lastError().isValid())
+    {
+        QMessageBox msg;
+        msg.setWindowTitle("Fehler in cMANAGER_InventurVERWALTUNG::FillVecGegenstaende");
+        msg.setText(query.lastError().text());
+        msg.exec();
+        return "";
+    }
+    if(query.next())
+    {
+        return query.value("ganzname").toString();
+    }
+    return "";
+}
+
 void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende(int izustandid/*=0*/)
 {
     QString strsql = "select * from GEGENSTAENDE where ZUSTAND_ID != 9";
@@ -115,6 +139,7 @@ void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende(int izustandid/*=0*/)
         gegenstand.NOTIZ = query.value("NOTIZ").toString();
         gegenstand.ZUSTAND_ID = query.value("ZUSTAND_ID").toInt();
         gegenstand.iVerantwortlicher_ID = query.value("Verantwortlicher_ID").toInt();
+        gegenstand.strVerantwortlicherName = GetVerantwortlicherName(query.value("Verantwortlicher_ID").toInt());
 
         m_vecGegenstaende.push_back(gegenstand);
     }
@@ -300,9 +325,9 @@ bool cMANAGER_InventurVERWALTUNG::SpeicherGegenstand(structGegenstand& gegenstan
 {
     QString strSQL = "";
     if(gegenstand.iGEGENSTAENDE_ID <= 0) // Annahme: ID <= 0 bedeutet INSERT
-        strSQL = "insert into GEGENSTAENDE (GEGENSTAENDE_ID, BEZEICHNUNG, SERIENNUMMER, ABTEILUNG_ID, GRUPPE_ID, STANDORT_ID, WERT_ANSCHAFFUNG, WERT_AKTUELL, ANGESCHAFFT_AM, NOTIZ, ZUSTAND_ID) values (:gid, :bez, :snr, :abtid, :gpid, :stid, :wa, :wak, :aa, :notiz, :zid)";
+        strSQL = "insert into GEGENSTAENDE (GEGENSTAENDE_ID, BEZEICHNUNG, SERIENNUMMER, ABTEILUNG_ID, GRUPPE_ID, STANDORT_ID, WERT_ANSCHAFFUNG, WERT_AKTUELL, ANGESCHAFFT_AM, NOTIZ, ZUSTAND_ID) values (:gid, :bez, :snr, :abtid, :gpid, :stid, :wa, :wak, :aa, :notiz, :zid, :vid)";
     else
-        strSQL = "update GEGENSTAENDE set BEZEICHNUNG=:bez, SERIENNUMMER=:snr, ABTEILUNG_ID=:abtid, GRUPPE_ID=:gpid, STANDORT_ID=:stid, WERT_ANSCHAFFUNG=:wa, WERT_AKTUELL=:wak, ANGESCHAFFT_AM=:aa, NOTIZ=:notiz, ZUSTAND_ID=:zid where GEGENSTAENDE_ID = :gid";
+        strSQL = "update GEGENSTAENDE set BEZEICHNUNG=:bez, SERIENNUMMER=:snr, ABTEILUNG_ID=:abtid, GRUPPE_ID=:gpid, STANDORT_ID=:stid, WERT_ANSCHAFFUNG=:wa, WERT_AKTUELL=:wak, ANGESCHAFFT_AM=:aa, NOTIZ=:notiz, ZUSTAND_ID=:zid, Verantwortlicher_ID=:vid where GEGENSTAENDE_ID = :gid";
 
     QSqlQuery query(m_db);
     query.prepare(strSQL);
@@ -317,6 +342,9 @@ bool cMANAGER_InventurVERWALTUNG::SpeicherGegenstand(structGegenstand& gegenstan
     query.bindValue(":aa", gegenstand.ANGESCHAFFT_AM);
     query.bindValue(":notiz", gegenstand.NOTIZ);
     query.bindValue(":zid", gegenstand.ZUSTAND_ID);
+    query.bindValue(":zid", gegenstand.ZUSTAND_ID);
+    query.bindValue(":vid", gegenstand.iVerantwortlicher_ID);
+
 
     query.exec();
     return ExecuteSomeSQL(query);

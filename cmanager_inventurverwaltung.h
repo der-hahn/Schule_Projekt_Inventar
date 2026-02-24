@@ -24,6 +24,7 @@ struct structGegenstand
     QString NOTIZ = "";
     int ZUSTAND_ID = 0;
     int iVerantwortlicher_ID = 0;
+    QString strVerantwortlicherName = "";
 };
 
 struct structPerson
@@ -144,6 +145,7 @@ public:
     bool LoescheAbteilung(int iabteilungid);
     bool LoescheZustand(int izustandid);
     bool LoescheGruppe(int igruppenid);
+    QString GetVerantwortlicherName(int iverantwortlicherid);
 protected:
 
     vecGegenstaende m_vecGegenstaende;
