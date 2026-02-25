@@ -8,7 +8,7 @@
 cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
 {
     m_db = QSqlDatabase::addDatabase("QODBC");
-    m_db.setDatabaseName("Driver={SQL Server};Server=herteltlaptop;database=kisdb_demo_20230808;Uid=dba;pwd=sqlosk");
+    m_db.setDatabaseName("Driver={SQL Server};Server=fusion;database=Demo_2024;Uid=dba;pwd=sqlosk");
     if(!m_db.open())
     {
         QMessageBox msg;
@@ -16,6 +16,8 @@ cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
         msg.setText(m_db.lastError().text());
         msg.exec();
     }
+
+    m_nbenutzernummer = -1;
 }
 
 cMANAGER_InventurVERWALTUNG::~cMANAGER_InventurVERWALTUNG()
@@ -65,7 +67,7 @@ bool cMANAGER_InventurVERWALTUNG::ExecuteSomeSQL(const QSqlQuery& query)
 
 QString cMANAGER_InventurVERWALTUNG::GetVerantwortlicherName(int iverantwortlicherid)
 {
-    QString strsql = "select LEFT(VORNAME, 1) + '.' + NAME ganzname from PERSON where PERSONEN_ID = " + QString::number(iverantwortlicherid);
+    QString strsql = "select LEFT(VORNAME, 1) + '.' + NAME ganzname from PERSONEN where PERSONEN_ID = " + QString::number(iverantwortlicherid);
 
     QSqlQuery query(m_db);
     query.prepare(strsql);
@@ -529,6 +531,47 @@ bool cMANAGER_InventurVERWALTUNG::SpeicherBereich(structBereich& bereich)
     return ExecuteSomeSQL(query);
 }
 
+void cMANAGER_InventurVERWALTUNG::FillVecFach()
+{
+    QString strsql = "select * from FACH";
+    QSqlQuery query(m_db);
+    query.prepare(strsql);
+    query.exec();
+    if(query.lastError().isValid())
+    {
+        QMessageBox msg;
+        msg.setWindowTitle("Fehler in cMANAGER_InventurVERWALTUNG::FillVecFach");
+        msg.setText(query.lastError().text());
+        msg.exec();
+        return;
+    }
+    m_vecFach.clear();
+    while(query.next())
+    {
+        structFach fach;
+        fach.iFACH_ID = query.value("FACH_ID").toInt();
+        fach.strBEZEICHNUNG = query.value("BEZEICHNUNG").toString();
+        m_vecFach.push_back(fach);
+    }
+}
+
+bool cMANAGER_InventurVERWALTUNG::SpeicherFach(structFach &fach)
+{
+    QString strSQL = "";
+    if(fach.iFACH_ID <= 0)
+        strSQL = "insert into FACH (FACH_ID, BEZEICHNUNG) values (:fid, :fbez)";
+    else
+        strSQL = "update FACH set BEZEICHNUNG=:fbez where FACH_ID = :fid";
+
+    QSqlQuery query(m_db);
+    query.prepare(strSQL);
+    query.bindValue(":fid", fach.iFACH_ID);
+    query.bindValue(":fbez", fach.strBEZEICHNUNG);
+
+    query.exec();
+    return ExecuteSomeSQL(query);
+}
+
 // Neu: Löschfunktion für Bereich
 bool cMANAGER_InventurVERWALTUNG::LoescheBereich(int ibereichid)
 {
@@ -540,7 +583,8 @@ bool cMANAGER_InventurVERWALTUNG::LoescheBereich(int ibereichid)
 
 bool cMANAGER_InventurVERWALTUNG::Anmelden(QString strbenutzername, QString strPasswort)
 {
-    QString strsql = "select PERSONEN_ID, BENUTZERNAME, PASSWORT from PERSONEN where BENUTZERNAME = :benname and PASSWORT = HASHBYTES('SHA2_256', :passwd)";
+    QString strsql = "SELECT PERSONEN_ID FROM PERSONEN WHERE BENUTZERNAME = :benname "
+                     "AND PASSWORT = HASHBYTES('SHA2_256', CAST(:passwd AS VARCHAR(255)))";
     QSqlQuery query(m_db);
     query.prepare(strsql);
 
@@ -554,13 +598,16 @@ bool cMANAGER_InventurVERWALTUNG::Anmelden(QString strbenutzername, QString strP
         msg.setWindowTitle("Fehler in cMANAGER_InventurVERWALTUNG::Anmelden");
         msg.setText(query.lastError().text());
         msg.exec();
+        m_nbenutzernummer = -1;
         return false;
     }
 
     if(query.next())
     {
+        m_nbenutzernummer =  query.value("PERSONEN_ID").toInt();
         return true;
     }
 
+    m_nbenutzernummer = -1;
     return false;
 }

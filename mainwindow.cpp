@@ -1,3 +1,4 @@
+#include "cmyapplication.cpp"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -13,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    m_pmanager = ((CMyApplication*)qApp)->GetpManagerInventurV();
     setupTopbar();
     setupTabs();  // nur einmal aufrufen!
 }
@@ -76,20 +78,20 @@ void MainWindow::setupTabs()
     ui->tabWidget_Gegenstandsanzeige->clear();
 
     // Daten vom Manager füllen
-    m_manager.FillVecZustaende();
-    m_manager.FillVecAbteilungen();
-    m_manager.FillVecGruppen();
-    m_manager.FillVecStandorte();
-    m_manager.FillVecGegenstaende();
+    m_pmanager->FillVecZustaende();
+    m_pmanager->FillVecAbteilungen();
+    m_pmanager->FillVecGruppen();
+    m_pmanager->FillVecStandorte();
+    m_pmanager->FillVecGegenstaende();
 
     // Lookup-Maps für Namen
     QMap<int, QString> mapAbteilung, mapGruppe, mapStandort;
-    for (auto &a : *m_manager.GetvecAbteilungen()) mapAbteilung[a.iABTEILUNG_ID] = a.strBESCHREIBUNG;
-    for (auto &g : *m_manager.GetvecGruppen()) mapGruppe[g.iGRUPPE_ID] = g.strBESCHREIBUNG;
-    for (auto &s : *m_manager.GetvecStandorte()) mapStandort[s.iSTANDORT_ID] = s.strBESCHREIBUNG;
+    for (auto &a : *(m_pmanager->GetvecAbteilungen())) mapAbteilung[a.iABTEILUNG_ID] = a.strBESCHREIBUNG;
+    for (auto &g : *(m_pmanager->GetvecGruppen())) mapGruppe[g.iGRUPPE_ID] = g.strBESCHREIBUNG;
+    for (auto &s : *(m_pmanager->GetvecStandorte())) mapStandort[s.iSTANDORT_ID] = s.strBESCHREIBUNG;
 
     // Für jeden Zustand einen Tab erstellen
-    for (const auto &zustand : *m_manager.GetvecZustaende())
+    for (const auto &zustand : *(m_pmanager->GetvecZustaende()))
     {
         QWidget *tab = new QWidget();
         QVBoxLayout *layout = new QVBoxLayout(tab);
@@ -116,7 +118,7 @@ void MainWindow::setupTabs()
 
         // Daten einfügen
         int row = 0;
-        for (auto &g : *m_manager.GetvecGegenstaende())
+        for (auto &g : *(m_pmanager->GetvecGegenstaende()))
         {
             if (g.ZUSTAND_ID != zustand.iZUSTAND_ID) continue;
 
