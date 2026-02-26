@@ -8,11 +8,11 @@
 cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
 {
     m_db = QSqlDatabase::addDatabase("QODBC");
-<<<<<<< HEAD
-    m_db.setDatabaseName("Driver={SQL Server};Server=herteltlaptop;database=kisdb_demo_20230808;Uid=dba;pwd=sqlosk");
-=======
-    m_db.setDatabaseName("Driver={SQL Server};Server=herteltlaptop;database=kisdb_demo_20230808;uid=dba;pwd=sqlosk");
->>>>>>> 1bdcc407a8d1ff911c1ba37a7eda445caa000b2b
+
+    m_db.setDatabaseName("Driver={SQL Server};Server=Fusion;database=Demo_2024;Uid=dba;pwd=sqlosk");
+
+
+
     if(!m_db.open())
     {
         QMessageBox msg;

@@ -5,6 +5,7 @@
 #include <qsqltablemodel.h>
 #include <QTableView>
 #include <qstandarditemmodel.h>
+#include "filterproxymodel.h"
 #include <qsortfilterproxymodel.h>
 #include "cmanager_inventurverwaltung.h"
 namespace Ui {
@@ -27,13 +28,15 @@ public:
     void setupTabs();
 
     void refreshTables();
+    void on_actionCSVexport_triggered();
+    void applyFilters();
 private:
     Ui::MainWindow *ui;
     QStringList statusList;
     cMANAGER_InventurVERWALTUNG m_manager;
     QVector<QStandardItemModel*> tableModels;
     QVector<QTableView*> tableViews;
-    QVector<QSortFilterProxyModel*> proxyModels;
+    QVector<FilterProxyModel*> proxyModels;
 
 };
 

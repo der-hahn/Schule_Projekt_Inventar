@@ -15,6 +15,7 @@ add_executable(appInventurverwaltung
     Icons.qrc
     cmanager_inventurverwaltung.cpp
     cmanager_inventurverwaltung.h
+    filterproxymodel.h filterproxymodel.cpp
 )
 
 target_link_libraries(appInventurverwaltung
