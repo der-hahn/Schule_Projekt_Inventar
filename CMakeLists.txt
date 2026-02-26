@@ -16,6 +16,8 @@ add_executable(appInventurverwaltung
     cmanager_inventurverwaltung.cpp
     cmanager_inventurverwaltung.h
     filterproxymodel.h filterproxymodel.cpp
+    cdia_anmelden.h cdia_anmelden.cpp cdia_anmelden.ui
+    cmyapplication.h cmyapplication.cpp
 )
 
 target_link_libraries(appInventurverwaltung

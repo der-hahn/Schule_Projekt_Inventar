@@ -23,12 +23,8 @@ struct structGegenstand
     QDate ANGESCHAFFT_AM;
     QString NOTIZ = "";
     int ZUSTAND_ID = 0;
-};
-
-struct structRolle
-{
-    int iID = 0;
-    QString strBez = "";
+    int iVerantwortlicher_ID = 0;
+    QString strVerantwortlicherName = "";
 };
 
 struct structPerson
@@ -79,17 +75,23 @@ struct structBereich
     QString strBESCHREIBUNG = "";
 };
 
+struct structFach
+{
+    int iFACH_ID = 0;
+    QString strBEZEICHNUNG = "";
+};
+
 // --- Typedefs für Vektoren (Bleiben unverändert) ---
 // ... (vecGegenstaende, vecPersonen, vecRollen, vecGruppen, vecZustaende, vecAbteilungen, vecStandorte, vecBereiche) ...
 
 typedef std::vector<structGegenstand> vecGegenstaende;
 typedef std::vector<structPerson> vecPersonen;
-typedef std::vector<structRolle> vecRollen;
 typedef std::vector<structGruppe> vecGruppen;
 typedef std::vector<structZustand> vecZustaende;
 typedef std::vector<structAbteilung> vecAbteilungen;
 typedef std::vector<structStandort> vecStandorte;
 typedef std::vector<structBereich> vecBereiche;
+typedef std::vector<structFach> vecFach;
 
 
 class cMANAGER_InventurVERWALTUNG
@@ -112,10 +114,6 @@ public:
     void FillVecPersonen();
     bool SpeicherPerson(structPerson& person); // NEU/GEÄNDERT
 
-    // Rolle
-    vecRollen* GetvecRollen() const { return const_cast<vecRollen*>(&m_vecRollen); }
-    void FillVecRollen();
-    bool SpeicherRolle(structRolle& rolle); // NEU/GEÄNDERT
 
     // Gruppe
     vecGruppen* GetvecGruppen() const { return const_cast<vecGruppen*>(&m_vecGruppen); }
@@ -142,20 +140,37 @@ public:
     void FillVecBereiche();
     bool SpeicherBereich(structBereich& bereich); // NEU/GEÄNDERT
 
+    // Fach
+    vecFach* GetvecFach() const { return const_cast<vecFach*>(&m_vecFach); }
+    void FillVecFach();
+    bool SpeicherFach(structFach& fach); // NEU/GEÄNDERT
+
     bool Anmelden(QString strbenutzername, QString strPasswort);
 public:
     QSqlDatabase m_db;
 
+    bool LoescheGegenstand(int gegenstandid);
+    bool Loeschevontabelle(int ipk, QString strtabname);
+    bool LoeschePerson(int ipersonid);
+    bool LoescheBereich(int ibereichid);
+    bool LoescheStandort(int istandortid);
+    bool LoescheAbteilung(int iabteilungid);
+    bool LoescheZustand(int izustandid);
+    bool LoescheGruppe(int igruppenid);
+    QString GetVerantwortlicherName(int iverantwortlicherid);
+    const int GetBenutzerNr(){return m_nbenutzernummer;}
 protected:
 
     vecGegenstaende m_vecGegenstaende;
     vecPersonen m_vecPersonen;
-    vecRollen m_vecRollen;
     vecGruppen m_vecGruppen;
     vecZustaende m_vecZustaende;
     vecAbteilungen m_vecAbteilungen;
     vecStandorte m_vecStandorte;
     vecBereiche m_vecBereiche;
+    vecFach m_vecFach;
+
+    int m_nbenutzernummer;
 };
 
 #endif // CMANAGER_GegenstaendeVERWALTUNG_H

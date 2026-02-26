@@ -1,3 +1,4 @@
+#include "cmyapplication.cpp"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "filterproxymodel.h"
@@ -14,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    m_pmanager = ((CMyApplication*)qApp)->GetpManagerInventurV();
     setupTopbar();
     setupTabs();  // nur einmal aufrufen!
 
@@ -117,21 +119,21 @@ void MainWindow::setupTabs()
 
 
     // Daten vom Manager füllen
-    m_manager.FillVecZustaende();
-    m_manager.FillVecAbteilungen();
-    m_manager.FillVecGruppen();
-    m_manager.FillVecStandorte();
-    m_manager.FillVecGegenstaende();
-    m_manager.FillVecPersonen();
+    m_pmanager->FillVecZustaende();
+    m_pmanager->FillVecAbteilungen();
+    m_pmanager->FillVecGruppen();
+    m_pmanager->FillVecStandorte();
+    m_pmanager->FillVecGegenstaende();
+    m_pmanager->FillVecPersonen();
 
     // Lookup-Maps für Namen
     QMap<int, QString> mapAbteilung, mapGruppe, mapStandort;
-    for (auto &a : *m_manager.GetvecAbteilungen()) mapAbteilung[a.iABTEILUNG_ID] = a.strBESCHREIBUNG;
-    for (auto &g : *m_manager.GetvecGruppen()) mapGruppe[g.iGRUPPE_ID] = g.strBESCHREIBUNG;
-    for (auto &s : *m_manager.GetvecStandorte()) mapStandort[s.iSTANDORT_ID] = s.strBESCHREIBUNG;
+    for (auto &a : *(m_pmanager->GetvecAbteilungen())) mapAbteilung[a.iABTEILUNG_ID] = a.strBESCHREIBUNG;
+    for (auto &g : *(m_pmanager->GetvecGruppen())) mapGruppe[g.iGRUPPE_ID] = g.strBESCHREIBUNG;
+    for (auto &s : *(m_pmanager->GetvecStandorte())) mapStandort[s.iSTANDORT_ID] = s.strBESCHREIBUNG;
 
     // Für jeden Zustand einen Tab erstellen
-    for (const auto &zustand : *m_manager.GetvecZustaende())
+    for (const auto &zustand : *(m_pmanager->GetvecZustaende()))
     {
         QWidget *tab = new QWidget();
         QVBoxLayout *layout = new QVBoxLayout(tab);
@@ -158,7 +160,7 @@ void MainWindow::setupTabs()
 
         // Daten einfügen
         int row = 0;
-        for (auto &g : *m_manager.GetvecGegenstaende())
+        for (auto &g : *(m_pmanager->GetvecGegenstaende()))
         {
             if (g.ZUSTAND_ID != zustand.iZUSTAND_ID) continue;
 
@@ -202,7 +204,7 @@ void MainWindow::setupTabs()
     ui->Abteilung_Edit_comboBox->clear();
     ui->Abteilung_Edit_comboBox->addItem("Alle", 0);
 
-    for (auto &a : *m_manager.GetvecAbteilungen())
+    for (auto &a : *m_pmanager->GetvecAbteilungen())
     {
         ui->Abteilung_Edit_comboBox->addItem(a.strBESCHREIBUNG,
                                     a.iABTEILUNG_ID);
@@ -211,7 +213,7 @@ void MainWindow::setupTabs()
     ui->Gruppierung_comboBox->clear();
     ui->Gruppierung_comboBox->addItem("Alle", 0);
 
-    for (auto &g : *m_manager.GetvecGruppen())
+    for (auto &g : *m_pmanager->GetvecGruppen())
     {
         ui->Gruppierung_comboBox->addItem(g.strBESCHREIBUNG,
                                  g.iGRUPPE_ID);
@@ -221,7 +223,7 @@ void MainWindow::setupTabs()
     ui->Verantwortlicher_comboBox->clear();
     ui->Verantwortlicher_comboBox->addItem("Alle", 0);
 
-    for (auto &p : *m_manager.GetvecPersonen())
+    for (auto &p : *m_pmanager->GetvecPersonen())
     {
         QString name = p.NAME + " " + p.VORNAME;
         ui->Verantwortlicher_comboBox->addItem(name,
@@ -231,7 +233,7 @@ void MainWindow::setupTabs()
     ui->Lagerort_comboBox->clear();
     ui->Lagerort_comboBox->addItem("Alle", -1);
 
-    for (auto &s : *m_manager.GetvecStandorte())
+    for (auto &s : *m_pmanager->GetvecStandorte())
     {
         ui->Lagerort_comboBox->addItem(s.strBESCHREIBUNG,
                                        s.iSTANDORT_ID);

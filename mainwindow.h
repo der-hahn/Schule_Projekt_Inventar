@@ -33,7 +33,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QStringList statusList;
-    cMANAGER_InventurVERWALTUNG m_manager;
+    cMANAGER_InventurVERWALTUNG* m_pmanager;
     QVector<QStandardItemModel*> tableModels;
     QVector<QTableView*> tableViews;
     QVector<FilterProxyModel*> proxyModels;
