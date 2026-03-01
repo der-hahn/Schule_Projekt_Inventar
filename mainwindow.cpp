@@ -9,6 +9,9 @@
 #include <QVBoxLayout>
 #include <QDebug>
 
+
+#include "cdia_neuanlage.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -107,6 +110,8 @@ void MainWindow::onSearchChanged(const QString &text)
 // ────────────── Tabs erstellen ──────────────
 void MainWindow::setupTabs()
 {
+
+
     // alte Views / Models löschen
     for (auto v : tableViews) delete v;
     for (auto m : tableModels) delete m;
@@ -140,6 +145,9 @@ void MainWindow::setupTabs()
         QVBoxLayout *layout = new QVBoxLayout(tab);
 
         QTableView *view = new QTableView(tab);
+
+        connect(view, &QTableView::doubleClicked, this, &MainWindow::on_actionBearbeiten_triggered);
+
         view->setSelectionBehavior(QAbstractItemView::SelectRows);
         view->setSelectionMode(QAbstractItemView::SingleSelection);
         view->setAlternatingRowColors(true);
@@ -276,4 +284,39 @@ void MainWindow::applyFilters()
 
 
 
+
+
+void MainWindow::on_actionNeues_Inventar_triggered()
+{
+    CDIA_NEUANLAGE dlg;
+    dlg.exec();
+}
+
+
+void MainWindow::on_actionBearbeiten_triggered()
+{
+    int currentTabIndex = ui->tabWidget_Gegenstandsanzeige->currentIndex();
+    if (currentTabIndex < 0 || currentTabIndex >= tableViews.size()) return;
+
+    // 1. Die View des aktuellen Tabs holen
+    QTableView *view = tableViews[currentTabIndex];
+    QModelIndex proxyIndex = view->currentIndex();
+
+    if (!proxyIndex.isValid()) {
+        qDebug() << "Keine Zeile ausgewählt!";
+        return;
+    }
+
+    // 2. Den Proxy-Index auf das Quell-Model (QStandardItemModel) mappen
+    FilterProxyModel *proxy = proxyModels[currentTabIndex];
+    QModelIndex sourceIndex = proxy->mapToSource(proxyIndex);
+
+    // 3. ID aus der ersten Spalte (Index 0) der gemappten Zeile holen
+    int gegenstandID = proxy->sourceModel()->index(sourceIndex.row(), 0).data().toInt();
+
+    // 4. Dialog öffnen und ID übergeben
+    CDIA_NEUANLAGE dlg;
+    dlg.SetGegenstaendeID(gegenstandID);
+    dlg.exec();
+}
 

@@ -9,7 +9,7 @@ cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
 {
     m_db = QSqlDatabase::addDatabase("QODBC");
 
-    m_db.setDatabaseName("Driver={SQL Server};Server=fusion;database=Demo_2024;Uid=dba;pwd=sqlosk");
+    m_db.setDatabaseName("Driver={SQL Server};Server=localhost;database=Schulinventur;Uid=sa;pwd=test123!");
     if(!m_db.open())
     {
         QMessageBox msg;
@@ -89,12 +89,15 @@ QString cMANAGER_InventurVERWALTUNG::GetVerantwortlicherName(int iverantwortlich
     return "";
 }
 
-void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende(int izustandid/*=0*/)
+void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende(int izustandid/*=0*/, int igegenstaende_id /*=0*/)
 {
     QString strsql = "select * from GEGENSTAENDE where ZUSTAND_ID != 9";
 
     if(izustandid > 0)
         strsql += " and ZUSTAND_ID = :zuid";
+
+    if(igegenstaende_id > 0)
+        strsql += " and GEGENSTAENDE_ID = :gegid";
 
 
     QSqlQuery query(m_db);
@@ -108,10 +111,9 @@ void cMANAGER_InventurVERWALTUNG::FillVecGegenstaende(int izustandid/*=0*/)
     {
         query.bindValue(":zuid", izustandid);
     }
-    else
+    if(igegenstaende_id > 0)
     {
-        // Wenn :zuid nicht in der SQL-Abfrage enthalten ist, sollte bindValue nicht aufgerufen werden.
-        // Da die Bedingung oben nur bei izustandid > 0 hinzugefügt wird, muss hier nichts passieren.
+        query.bindValue(":gegid", igegenstaende_id);
     }
 
 

@@ -106,7 +106,7 @@ public:
 
     // Gegenstaende
     vecGegenstaende* GetvecGegenstaende() const { return const_cast<vecGegenstaende*>(&m_vecGegenstaende); }
-    void FillVecGegenstaende(int izustandid=0);
+    void FillVecGegenstaende(int izustandid=0, int igegenstaende_id=0);
     bool SpeicherGegenstand(structGegenstand& gegenstand); // NEU/GEÄNDERT
 
     // Person
