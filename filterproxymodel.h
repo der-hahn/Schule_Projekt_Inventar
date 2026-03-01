@@ -10,7 +10,8 @@ class FilterProxyModel : public QSortFilterProxyModel
 public:
     void setFilterValues(const QString &abt,
                          const QString &grp,
-                         const QString &ver);
+                         const QString &ver,
+                         const QString &lag);
 
 protected:
     bool filterAcceptsRow(int source_row,
@@ -20,6 +21,7 @@ private:
     QString m_abtText;
     QString m_grpText;
     QString m_verText;
+    QString m_lagText;
 };
 
 #endif // FILTERPROXYMODEL_H

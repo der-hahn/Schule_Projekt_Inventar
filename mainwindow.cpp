@@ -127,11 +127,12 @@ void MainWindow::setupTabs()
     m_pmanager->FillVecPersonen();
 
     // Lookup-Maps für Namen
-    QMap<int, QString> mapAbteilung, mapGruppe, mapStandort;
+    QMap<int, QString> mapAbteilung, mapGruppe, mapStandort, mapVerantwortlicher;
     for (auto &a : *(m_pmanager->GetvecAbteilungen())) mapAbteilung[a.iABTEILUNG_ID] = a.strBESCHREIBUNG;
     for (auto &g : *(m_pmanager->GetvecGruppen())) mapGruppe[g.iGRUPPE_ID] = g.strBESCHREIBUNG;
     for (auto &s : *(m_pmanager->GetvecStandorte())) mapStandort[s.iSTANDORT_ID] = s.strBESCHREIBUNG;
-
+    for (auto &p : *(m_pmanager->GetvecPersonen()))
+        mapVerantwortlicher[p.iPERSONEN_ID] = p.NAME + " " + p.VORNAME;
     // Für jeden Zustand einen Tab erstellen
     for (const auto &zustand : *(m_pmanager->GetvecZustaende()))
     {
@@ -152,7 +153,7 @@ void MainWindow::setupTabs()
         QStandardItemModel *model = new QStandardItemModel(this);
         QStringList headers = {
             "ID", "Bezeichnung", "Seriennummer",
-            "Abteilung", "Gruppe", "Standort",
+            "Abteilung", "Gruppe","Verantwortlicher", "Standort",
             "Anschaffung (€)", "Aktuell (€)",
             "Angeschafft am", "Notiz"
         };
@@ -170,11 +171,13 @@ void MainWindow::setupTabs()
             model->setData(model->index(row, 2), g.strSERIENNUMMER);
             model->setData(model->index(row, 3), mapAbteilung[g.ABTEILUNG_ID]);
             model->setData(model->index(row, 4), mapGruppe[g.GRUPPE_ID]);
-            model->setData(model->index(row, 5), mapStandort[g.STANDORT_ID]);
-            model->setData(model->index(row, 6), g.WERT_ANSCHAFFUNG);
-            model->setData(model->index(row, 7), g.WERT_AKTUELL);
-            model->setData(model->index(row, 8), g.ANGESCHAFFT_AM.toString("dd.MM.yyyy"));
-            model->setData(model->index(row, 9), g.NOTIZ);
+            model->setData(model->index(row, 5), mapVerantwortlicher[g.iVerantwortlicher_ID]);
+            model->setData(model->index(row, 6), mapStandort[g.STANDORT_ID]);
+            model->setData(model->index(row, 7), g.WERT_ANSCHAFFUNG);
+            model->setData(model->index(row, 8), g.WERT_AKTUELL);
+            model->setData(model->index(row, 9), g.ANGESCHAFFT_AM.toString("dd.MM.yyyy"));
+            model->setData(model->index(row, 10), g.NOTIZ);
+
 
             row++;
         }
@@ -201,43 +204,33 @@ void MainWindow::setupTabs()
         view->resizeColumnsToContents();
     }
 
+    // Filter-Comboboxen initial auf „Alle“ setzen
     ui->Abteilung_Edit_comboBox->clear();
     ui->Abteilung_Edit_comboBox->addItem("Alle", 0);
-
     for (auto &a : *m_pmanager->GetvecAbteilungen())
-    {
-        ui->Abteilung_Edit_comboBox->addItem(a.strBESCHREIBUNG,
-                                    a.iABTEILUNG_ID);
-    }
+        ui->Abteilung_Edit_comboBox->addItem(a.strBESCHREIBUNG, a.iABTEILUNG_ID);
+    ui->Abteilung_Edit_comboBox->setCurrentIndex(0);
 
     ui->Gruppierung_comboBox->clear();
     ui->Gruppierung_comboBox->addItem("Alle", 0);
-
     for (auto &g : *m_pmanager->GetvecGruppen())
-    {
-        ui->Gruppierung_comboBox->addItem(g.strBESCHREIBUNG,
-                                 g.iGRUPPE_ID);
-    }
-
+        ui->Gruppierung_comboBox->addItem(g.strBESCHREIBUNG, g.iGRUPPE_ID);
+    ui->Gruppierung_comboBox->setCurrentIndex(0);
 
     ui->Verantwortlicher_comboBox->clear();
     ui->Verantwortlicher_comboBox->addItem("Alle", 0);
-
     for (auto &p : *m_pmanager->GetvecPersonen())
-    {
-        QString name = p.NAME + " " + p.VORNAME;
-        ui->Verantwortlicher_comboBox->addItem(name,
-                                           p.iPERSONEN_ID);
-    }
+        ui->Verantwortlicher_comboBox->addItem(p.NAME + " " + p.VORNAME, p.iPERSONEN_ID);
+    ui->Verantwortlicher_comboBox->setCurrentIndex(0);
 
     ui->Lagerort_comboBox->clear();
     ui->Lagerort_comboBox->addItem("Alle", -1);
-
     for (auto &s : *m_pmanager->GetvecStandorte())
-    {
-        ui->Lagerort_comboBox->addItem(s.strBESCHREIBUNG,
-                                       s.iSTANDORT_ID);
-    }
+        ui->Lagerort_comboBox->addItem(s.strBESCHREIBUNG, s.iSTANDORT_ID);
+    ui->Lagerort_comboBox->setCurrentIndex(0);
+
+    applyFilters();
+
 }
 
 void MainWindow::on_actionCSVexport_triggered()
@@ -270,9 +263,11 @@ void MainWindow::applyFilters()
     QString abt = ui->Abteilung_Edit_comboBox->currentText();
     QString grp = ui->Gruppierung_comboBox->currentText();
     QString ver = ui->Verantwortlicher_comboBox->currentText();
+    QString lag = ui->Lagerort_comboBox->currentText();
+
 
     for (auto proxy : proxyModels)
-        proxy->setFilterValues(abt, grp, ver);
+        proxy->setFilterValues(abt, grp, ver, lag);
 }
 
 
