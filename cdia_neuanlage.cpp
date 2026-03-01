@@ -121,6 +121,7 @@ void CDIA_NEUANLAGE::FillBildschirm()
 
         if(gegenstand.iVerantwortlicher_ID != m_pmanager->GetBenutzerNr())
         {
+            ui->lineEdit_bez->setEnabled(false);
             ui->comboBox_abt->setEnabled(false);
             ui->comboBox_gruppe->               setEnabled(false);//setCurrentIndex(iindex_gruppe);
             ui->comboBox_standort->             setEnabled(false);//setCurrentIndex(iindex_standort);
