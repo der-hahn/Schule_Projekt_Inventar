@@ -282,7 +282,13 @@ void MainWindow::applyFilters()
 
 
 
-
+void MainWindow::NeuLadenBeiAenderung(int irewert)
+{
+    if(irewert == QDialog::DialogCode::Accepted)
+    {
+        refreshTables();
+    }
+}
 
 
 
@@ -290,6 +296,8 @@ void MainWindow::on_actionNeues_Inventar_triggered()
 {
     CDIA_NEUANLAGE dlg;
     dlg.exec();
+
+
 }
 
 

@@ -138,3 +138,30 @@ void CDIA_NEUANLAGE::FillBildschirm()
 
 
 }
+
+void CDIA_NEUANLAGE::on_buttonBox_accepted()
+{
+
+    structGegenstand gegenstand;
+
+    // Werte bekommen
+    gegenstand.ABTEILUNG_ID = ui->comboBox_abt->currentData().toInt();
+    gegenstand.GRUPPE_ID = ui->comboBox_gruppe->currentData().toInt();
+    gegenstand.STANDORT_ID = ui->comboBox_standort->currentData().toInt();
+    gegenstand.ZUSTAND_ID = ui->comboBox_zustand->currentData().toInt();
+    gegenstand.iVerantwortlicher_ID = ui->comboBox_verantwortlicher->currentData().toInt();
+
+    gegenstand.strBEZEICHNUNG = ui->lineEdit_bez->text();
+    gegenstand.strSERIENNUMMER = ui->lineEdit_seriennr->text();
+    gegenstand.WERT_ANSCHAFFUNG = ui->doubleSpinBox_ansch->value();
+    gegenstand.WERT_AKTUELL = ui->doubleSpinBox_wertak->value();
+    gegenstand.ANGESCHAFFT_AM = ui->dateEdit_anscham->date();
+    gegenstand.NOTIZ = ui->lineEdit_notiz->text();
+
+
+
+
+
+    m_pmanager->SpeicherGegenstand(gegenstand);
+}
+
