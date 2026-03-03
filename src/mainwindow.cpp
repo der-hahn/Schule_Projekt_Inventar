@@ -1,12 +1,16 @@
 #include "cmyapplication.cpp"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "filterproxymodel.h"
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 #include <QFileDialog>
 #include <QTextStream>
 #include <QVBoxLayout>
+#include <QDebug>
+
+
+#include "cdia_neuanlage.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -17,6 +21,24 @@ MainWindow::MainWindow(QWidget *parent)
     m_pmanager = ((CMyApplication*)qApp)->GetpManagerInventurV();
     setupTopbar();
     setupTabs();  // nur einmal aufrufen!
+
+    connect(ui->actionCSVexport,
+            &QAction::triggered,
+            this,
+            &MainWindow::onExportCsv);
+
+
+    connect(ui->Abteilung_Edit_comboBox, &QComboBox::currentIndexChanged,
+            this, &MainWindow::applyFilters);
+
+    connect(ui->Gruppierung_comboBox, &QComboBox::currentIndexChanged,
+            this, &MainWindow::applyFilters);
+
+    connect(ui->Verantwortlicher_comboBox, &QComboBox::currentIndexChanged,
+            this, &MainWindow::applyFilters);
+
+    connect(ui->Lagerort_comboBox, &QComboBox::currentIndexChanged,
+            this, &MainWindow::applyFilters);
 }
 
 MainWindow::~MainWindow()
@@ -28,33 +50,54 @@ MainWindow::~MainWindow()
 void MainWindow::onExportCsv()
 {
     int tab = ui->tabWidget_Gegenstandsanzeige->currentIndex();
-    if (tab < 0) return;
 
-    auto *proxy = proxyModels[tab];
-    auto *model = proxy->sourceModel();
+    if (tab < 0 || tab >= proxyModels.size())
+        return;
 
-    QString file = QFileDialog::getSaveFileName(this, "CSV exportieren", "", "CSV (*.csv)");
+    QSortFilterProxyModel* proxy = proxyModels[tab];
+    if (!proxy)
+        return;
+
+    QAbstractItemModel* model = proxy;
+
+    QString file = QFileDialog::getSaveFileName(this,
+                                                "CSV exportieren",
+                                                "",
+                                                "CSV (*.csv)");
     if (file.isEmpty()) return;
 
     QFile f(file);
-    if (!f.open(QIODevice::WriteOnly)) return;
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
 
     QTextStream out(&f);
+    out.setEncoding(QStringConverter::Utf8);   // wichtig für Umlaute
 
     // Header
-    for (int c = 0; c < model->columnCount(); c++)
-        out << model->headerData(c, Qt::Horizontal).toString()
-            << (c+1 == model->columnCount() ? "\n" : ";");
-
-    // Zeilen
-    for (int r = 0; r < model->rowCount(); r++)
+    for (int c = 0; c < model->columnCount(); ++c)
     {
-        for (int c = 0; c < model->columnCount(); c++)
-        {
-            out << model->index(r, c).data().toString()
-            << (c+1 == model->columnCount() ? "\n" : ";");
-        }
+        out << model->headerData(c, Qt::Horizontal).toString();
+        if (c < model->columnCount()-1)
+            out << ";";
     }
+    out << "\n";
+
+    // Daten
+    for (int r = 0; r < model->rowCount(); ++r)
+    {
+        for (int c = 0; c < model->columnCount(); ++c)
+        {
+            QString value = model->index(r, c).data().toString();
+            value.replace(";", ","); // CSV-Schutz
+            out << value;
+
+            if (c < model->columnCount()-1)
+                out << ";";
+        }
+        out << "\n";
+    }
+
+    f.close();
 }
 
 // ────────────── Live-Suche ──────────────
@@ -67,6 +110,8 @@ void MainWindow::onSearchChanged(const QString &text)
 // ────────────── Tabs erstellen ──────────────
 void MainWindow::setupTabs()
 {
+
+
     // alte Views / Models löschen
     for (auto v : tableViews) delete v;
     for (auto m : tableModels) delete m;
@@ -77,19 +122,22 @@ void MainWindow::setupTabs()
     proxyModels.clear();
     ui->tabWidget_Gegenstandsanzeige->clear();
 
+
     // Daten vom Manager füllen
     m_pmanager->FillVecZustaende();
     m_pmanager->FillVecAbteilungen();
     m_pmanager->FillVecGruppen();
     m_pmanager->FillVecStandorte();
     m_pmanager->FillVecGegenstaende();
+    m_pmanager->FillVecPersonen();
 
     // Lookup-Maps für Namen
-    QMap<int, QString> mapAbteilung, mapGruppe, mapStandort;
+    QMap<int, QString> mapAbteilung, mapGruppe, mapStandort, mapVerantwortlicher;
     for (auto &a : *(m_pmanager->GetvecAbteilungen())) mapAbteilung[a.iABTEILUNG_ID] = a.strBESCHREIBUNG;
     for (auto &g : *(m_pmanager->GetvecGruppen())) mapGruppe[g.iGRUPPE_ID] = g.strBESCHREIBUNG;
     for (auto &s : *(m_pmanager->GetvecStandorte())) mapStandort[s.iSTANDORT_ID] = s.strBESCHREIBUNG;
-
+    for (auto &p : *(m_pmanager->GetvecPersonen()))
+        mapVerantwortlicher[p.iPERSONEN_ID] = p.NAME + " " + p.VORNAME;
     // Für jeden Zustand einen Tab erstellen
     for (const auto &zustand : *(m_pmanager->GetvecZustaende()))
     {
@@ -97,6 +145,9 @@ void MainWindow::setupTabs()
         QVBoxLayout *layout = new QVBoxLayout(tab);
 
         QTableView *view = new QTableView(tab);
+
+        connect(view, &QTableView::doubleClicked, this, &MainWindow::on_actionBearbeiten_triggered);
+
         view->setSelectionBehavior(QAbstractItemView::SelectRows);
         view->setSelectionMode(QAbstractItemView::SingleSelection);
         view->setAlternatingRowColors(true);
@@ -110,7 +161,7 @@ void MainWindow::setupTabs()
         QStandardItemModel *model = new QStandardItemModel(this);
         QStringList headers = {
             "ID", "Bezeichnung", "Seriennummer",
-            "Abteilung", "Gruppe", "Standort",
+            "Abteilung", "Gruppe","Verantwortlicher", "Standort",
             "Anschaffung (€)", "Aktuell (€)",
             "Angeschafft am", "Notiz"
         };
@@ -128,20 +179,28 @@ void MainWindow::setupTabs()
             model->setData(model->index(row, 2), g.strSERIENNUMMER);
             model->setData(model->index(row, 3), mapAbteilung[g.ABTEILUNG_ID]);
             model->setData(model->index(row, 4), mapGruppe[g.GRUPPE_ID]);
-            model->setData(model->index(row, 5), mapStandort[g.STANDORT_ID]);
-            model->setData(model->index(row, 6), g.WERT_ANSCHAFFUNG);
-            model->setData(model->index(row, 7), g.WERT_AKTUELL);
-            model->setData(model->index(row, 8), g.ANGESCHAFFT_AM.toString("dd.MM.yyyy"));
-            model->setData(model->index(row, 9), g.NOTIZ);
+            model->setData(model->index(row, 5), mapVerantwortlicher[g.iVerantwortlicher_ID]);
+            model->setData(model->index(row, 6), mapStandort[g.STANDORT_ID]);
+            model->setData(model->index(row, 7), g.WERT_ANSCHAFFUNG);
+            model->setData(model->index(row, 8), g.WERT_AKTUELL);
+            model->setData(model->index(row, 9), g.ANGESCHAFFT_AM.toString("dd.MM.yyyy"));
+            model->setData(model->index(row, 10), g.NOTIZ);
+
 
             row++;
         }
+        qDebug() << "Tab:" << zustand.strBESCHREIBUNG
+                 << "Zeilen:" << model->rowCount();
+
 
         // ProxyModel für Live-Suche
-        QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+        //QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
+        //proxy->setSourceModel(model);
+        //proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+        //proxy->setFilterKeyColumn(-1); // alle Spalten
+
+        FilterProxyModel *proxy = new FilterProxyModel();
         proxy->setSourceModel(model);
-        proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-        proxy->setFilterKeyColumn(-1); // alle Spalten
 
         view->setModel(proxy);
 
@@ -152,7 +211,42 @@ void MainWindow::setupTabs()
 
         view->resizeColumnsToContents();
     }
+
+    // Filter-Comboboxen initial auf „Alle“ setzen
+    ui->Abteilung_Edit_comboBox->clear();
+    ui->Abteilung_Edit_comboBox->addItem("Alle", 0);
+    for (auto &a : *m_pmanager->GetvecAbteilungen())
+        ui->Abteilung_Edit_comboBox->addItem(a.strBESCHREIBUNG, a.iABTEILUNG_ID);
+    ui->Abteilung_Edit_comboBox->setCurrentIndex(0);
+
+    ui->Gruppierung_comboBox->clear();
+    ui->Gruppierung_comboBox->addItem("Alle", 0);
+    for (auto &g : *m_pmanager->GetvecGruppen())
+        ui->Gruppierung_comboBox->addItem(g.strBESCHREIBUNG, g.iGRUPPE_ID);
+    ui->Gruppierung_comboBox->setCurrentIndex(0);
+
+    ui->Verantwortlicher_comboBox->clear();
+    ui->Verantwortlicher_comboBox->addItem("Alle", 0);
+    for (auto &p : *m_pmanager->GetvecPersonen())
+        ui->Verantwortlicher_comboBox->addItem(p.NAME + " " + p.VORNAME, p.iPERSONEN_ID);
+    ui->Verantwortlicher_comboBox->setCurrentIndex(0);
+
+    ui->Lagerort_comboBox->clear();
+    ui->Lagerort_comboBox->addItem("Alle", -1);
+    for (auto &s : *m_pmanager->GetvecStandorte())
+        ui->Lagerort_comboBox->addItem(s.strBESCHREIBUNG, s.iSTANDORT_ID);
+    ui->Lagerort_comboBox->setCurrentIndex(0);
+
+    applyFilters();
+
 }
+
+void MainWindow::on_actionCSVexport_triggered()
+{
+    onExportCsv();
+}
+
+
 
 // ────────────── Topbar / Suchfeld ──────────────
 void MainWindow::setupTopbar()
@@ -161,10 +255,68 @@ void MainWindow::setupTopbar()
     topBar->setMovable(false);
     topBar->setIconSize(QSize(24,24));
 
-    QLineEdit *searchField = new QLineEdit(this);
-    searchField->setPlaceholderText("Inventar durchsuchen...");
-    searchField->setMaximumWidth(250);
-    topBar->insertWidget(ui->actionNeues_Inventar, searchField);
+    //QLineEdit *searchField = new QLineEdit(this);
+    //searchField->setPlaceholderText("Inventar durchsuchen...");
+    //searchField->setMaximumWidth(250);
+    //topBar->insertWidget(ui->actionNeues_Inventar, searchField);
 
-    connect(searchField, &QLineEdit::textChanged, this, &MainWindow::onSearchChanged);
+    //connect(searchField, &QLineEdit::textChanged, this, &MainWindow::onSearchChanged);
 }
+
+
+
+
+void MainWindow::applyFilters()
+{
+    QString abt = ui->Abteilung_Edit_comboBox->currentText();
+    QString grp = ui->Gruppierung_comboBox->currentText();
+    QString ver = ui->Verantwortlicher_comboBox->currentText();
+    QString lag = ui->Lagerort_comboBox->currentText();
+
+
+    for (auto proxy : proxyModels)
+        proxy->setFilterValues(abt, grp, ver, lag);
+}
+
+
+
+
+
+
+
+
+
+void MainWindow::on_actionNeues_Inventar_triggered()
+{
+    CDIA_NEUANLAGE dlg;
+    dlg.exec();
+}
+
+
+void MainWindow::on_actionBearbeiten_triggered()
+{
+    int currentTabIndex = ui->tabWidget_Gegenstandsanzeige->currentIndex();
+    if (currentTabIndex < 0 || currentTabIndex >= tableViews.size()) return;
+
+    // 1. Die View des aktuellen Tabs holen
+    QTableView *view = tableViews[currentTabIndex];
+    QModelIndex proxyIndex = view->currentIndex();
+
+    if (!proxyIndex.isValid()) {
+        qDebug() << "Keine Zeile ausgewählt!";
+        return;
+    }
+
+    // 2. Den Proxy-Index auf das Quell-Model (QStandardItemModel) mappen
+    FilterProxyModel *proxy = proxyModels[currentTabIndex];
+    QModelIndex sourceIndex = proxy->mapToSource(proxyIndex);
+
+    // 3. ID aus der ersten Spalte (Index 0) der gemappten Zeile holen
+    int gegenstandID = proxy->sourceModel()->index(sourceIndex.row(), 0).data().toInt();
+
+    // 4. Dialog öffnen und ID übergeben
+    CDIA_NEUANLAGE dlg;
+    dlg.SetGegenstaendeID(gegenstandID);
+    dlg.exec();
+}
+

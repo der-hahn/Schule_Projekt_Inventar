@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/new/prefix1">
         <file>Icons/export-to-csv-icon-15.jpg</file>
+        <file>Icons/1000_F_435074402_IWFBHlPhtwWWW8May4m5Y34mFb6Fdjdm.jpg</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

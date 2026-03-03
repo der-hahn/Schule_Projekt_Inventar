@@ -106,11 +106,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="Lagerort_lineEdit">
-         <property name="placeholderText">
-          <string>Lagerort</string>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="Lagerort_comboBox"/>
        </item>
        <item>
         <spacer name="verticalSpacer_2">
@@ -200,6 +196,7 @@
    <addaction name="actionNeues_Inventar"/>
    <addaction name="actionReset"/>
    <addaction name="actionCSVexport"/>
+   <addaction name="actionBearbeiten"/>
   </widget>
   <action name="actionNeues_Inventar">
    <property name="icon">
@@ -230,6 +227,21 @@
    </property>
    <property name="text">
     <string>CSVexport</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionBearbeiten">
+   <property name="icon">
+    <iconset resource="Icons.qrc">
+     <normaloff>:/new/prefix1/Icons/1000_F_435074402_IWFBHlPhtwWWW8May4m5Y34mFb6Fdjdm.jpg</normaloff>:/new/prefix1/Icons/1000_F_435074402_IWFBHlPhtwWWW8May4m5Y34mFb6Fdjdm.jpg</iconset>
+   </property>
+   <property name="text">
+    <string>Bearbeiten </string>
+   </property>
+   <property name="font">
+    <font/>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
