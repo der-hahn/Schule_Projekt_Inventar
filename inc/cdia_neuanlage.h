@@ -27,6 +27,8 @@ private:
 
 protected:
     int m_igegenstaende_id;
+private slots:
+    void on_buttonBox_accepted();
 };
 
 #endif // CDIA_NEUANLAGE_H
