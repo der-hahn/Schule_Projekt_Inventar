@@ -7,7 +7,6 @@
 #include <qstandarditemmodel.h>
 #include "filterproxymodel.h"
 #include <qsortfilterproxymodel.h>
-#include "cdia_neuanlage.h"
 #include "cmanager_inventurverwaltung.h"
 namespace Ui {
 class MainWindow;
@@ -27,11 +26,10 @@ public:
     void onExportCsv();
     void onSearchChanged(const QString &text);
     void setupTabs();
-
-    void refreshTables();
     void on_actionCSVexport_triggered();
     void applyFilters();
     void NeuLadenBeiAenderung(int irewert);
+    void showEvent(QShowEvent *event);
 private slots:
     void on_actionNeues_Inventar_triggered();
 

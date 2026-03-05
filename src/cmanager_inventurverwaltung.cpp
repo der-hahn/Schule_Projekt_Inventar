@@ -9,7 +9,7 @@ cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
 {
     m_db = QSqlDatabase::addDatabase("QODBC");
 
-    m_db.setDatabaseName("Driver={SQL Server};Server=localhost;database=kisdb;Uid=dba;pwd=sqlosk");
+    m_db.setDatabaseName("Driver={SQL Server};Server=localhost;database=Schulinventur;Uid=sa;pwd=sqlosk");
     if(!m_db.open())
     {
         QMessageBox msg;
@@ -19,6 +19,7 @@ cMANAGER_InventurVERWALTUNG::cMANAGER_InventurVERWALTUNG()
     }
 
     m_nbenutzernummer = -1;
+    m_nbereichsid = -1;
 }
 
 cMANAGER_InventurVERWALTUNG::~cMANAGER_InventurVERWALTUNG()
@@ -586,7 +587,7 @@ bool cMANAGER_InventurVERWALTUNG::LoescheBereich(int ibereichid)
 
 bool cMANAGER_InventurVERWALTUNG::Anmelden(QString strbenutzername, QString strPasswort)
 {
-    QString strsql = "SELECT PERSONEN_ID FROM PERSONEN WHERE BENUTZERNAME = :benname "
+    QString strsql = "SELECT PERSONEN_ID, BEREICH_ID FROM PERSONEN WHERE BENUTZERNAME = :benname "
                      "AND PASSWORT = HASHBYTES('SHA2_256', CAST(:passwd AS VARCHAR(255)))";
     QSqlQuery query(m_db);
     query.prepare(strsql);
@@ -602,12 +603,14 @@ bool cMANAGER_InventurVERWALTUNG::Anmelden(QString strbenutzername, QString strP
         msg.setText(query.lastError().text());
         msg.exec();
         m_nbenutzernummer = -1;
+        m_nbereichsid = -1;
         return false;
     }
 
     if(query.next())
     {
         m_nbenutzernummer =  query.value("PERSONEN_ID").toInt();
+        m_nbereichsid = query.value("BEREICH_ID").toInt();
         return true;
     }
 

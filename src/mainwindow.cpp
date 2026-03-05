@@ -279,14 +279,21 @@ void MainWindow::applyFilters()
 }
 
 
-
+void MainWindow::showEvent(QShowEvent* event)
+{
+    if(m_pmanager->GetBenutzerBer() != BenutzerBereiche::Inventurverwalter && m_pmanager->GetBenutzerBer() != BenutzerBereiche::ITAdministration)
+    {
+        ui->actionNeues_Inventar->setEnabled(false);
+    }
+}
 
 
 void MainWindow::NeuLadenBeiAenderung(int irewert)
 {
     if(irewert == QDialog::DialogCode::Accepted)
     {
-        refreshTables();
+        setupTopbar();
+        setupTabs();  // nur einmal aufrufen!
     }
 }
 
