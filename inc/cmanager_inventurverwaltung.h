@@ -7,6 +7,30 @@
 #include <QDate>
 #include <QSqlQuery>
 
+
+
+enum BenutzerBereiche
+{
+    Schulleitung = 1,
+    Lehrkörper,
+    ITAdministration,
+    Hausmeisterei,
+    Inventurverwalter
+};
+
+
+enum Zustaende
+{
+    Projektiert = 1,
+    Angefordert,
+    Bestellt,
+    Geliefert,
+    Eingesetzt,
+    Ausgeliehen,
+    Reparatur,
+    Ausgemustert
+};
+
 // --- Strukturen (Bleiben unverändert) ---
 // ... (structGegenstand, structRolle, structPerson, structGruppe, structZustand, structAbteilung, structStandort, structBereich) ...
 
@@ -159,6 +183,7 @@ public:
     bool LoescheGruppe(int igruppenid);
     QString GetVerantwortlicherName(int iverantwortlicherid);
     const int GetBenutzerNr(){return m_nbenutzernummer;}
+    const int GetBenutzerBer(){return m_nbereichsid;}
 protected:
 
     vecGegenstaende m_vecGegenstaende;
@@ -171,6 +196,7 @@ protected:
     vecFach m_vecFach;
 
     int m_nbenutzernummer;
+    int m_nbereichsid;
 };
 
 #endif // CMANAGER_GegenstaendeVERWALTUNG_H

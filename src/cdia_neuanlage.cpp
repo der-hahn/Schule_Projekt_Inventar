@@ -2,6 +2,8 @@
 #include "cmyapplication.cpp"
 #include "ui_cdia_neuanlage.h"
 
+#include <QStandardItemModel>
+
 CDIA_NEUANLAGE::CDIA_NEUANLAGE(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::CDIA_NEUANLAGE)
@@ -70,6 +72,15 @@ void CDIA_NEUANLAGE::FillBildschirm()
     {
         const auto& zustand = pvecZustand->at(i);
         ui->comboBox_zustand->addItem(zustand.strBESCHREIBUNG, zustand.iZUSTAND_ID);
+
+        if((m_pmanager->GetBenutzerBer() != BenutzerBereiche::Inventurverwalter && m_pmanager->GetBenutzerBer() != BenutzerBereiche::ITAdministration) && zustand.iZUSTAND_ID == Zustaende::Ausgemustert)
+        {
+            QStandardItemModel* model = qobject_cast<QStandardItemModel*>(ui->comboBox_zustand->model());
+            QStandardItem* item = model->item(i);
+
+            // Flag "Enabled" entfernen -> sichtbar, aber nicht klickbar
+            item->setFlags(item->flags() &~ Qt::ItemIsEnabled);
+        }
     }
 
 
@@ -119,6 +130,7 @@ void CDIA_NEUANLAGE::FillBildschirm()
         ui->dateEdit_anscham->setDate(gegenstand.ANGESCHAFFT_AM);
         ui->lineEdit_notiz->setText(gegenstand.NOTIZ);
 
+
         if(gegenstand.iVerantwortlicher_ID != m_pmanager->GetBenutzerNr())
         {
             ui->lineEdit_bez->setEnabled(false);
@@ -136,7 +148,27 @@ void CDIA_NEUANLAGE::FillBildschirm()
 
     }
 
+    if(m_pmanager->GetBenutzerBer() == BenutzerBereiche::ITAdministration || (m_pmanager->GetBenutzerBer() == BenutzerBereiche::Inventurverwalter && m_igegenstaende_id == 0))
+    {
+        ui->lineEdit_bez->setEnabled(true);
+        ui->comboBox_abt->setEnabled(true);
+        ui->comboBox_gruppe->               setEnabled(true);//setCurrentIndex(iindex_gruppe);
+        ui->comboBox_standort->             setEnabled(true);//setCurrentIndex(iindex_standort);
+        ui->comboBox_zustand->              setEnabled(true);//setCurrentIndex(iindex_zustand);
+        ui->comboBox_verantwortlicher->     setEnabled(true);//setCurrentIndex(iindex_verantwortlicher);
+        ui->lineEdit_seriennr->             setEnabled(true);//setText(gegenstand.strSERIENNUMMER);
+        ui->doubleSpinBox_ansch->           setEnabled(true);//setValue(gegenstand.WERT_ANSCHAFFUNG);
+        ui->doubleSpinBox_wertak->          setEnabled(true);//setValue(gegenstand.WERT_AKTUELL);
+        ui->dateEdit_anscham->              setEnabled(true);//setDate(gegenstand.ANGESCHAFFT_AM);
+        ui->lineEdit_notiz->                setEnabled(true);//setText(gegenstand.NOTIZ);
+        ui->comboBox_verantwortlicher->setEnabled(true);
+    }
+    else if(m_pmanager->GetBenutzerBer() == BenutzerBereiche::Inventurverwalter)
+    {
+        ui->comboBox_verantwortlicher->setEnabled(true);
+        ui->comboBox_zustand->setEnabled(true);
 
+    }
 }
 
 void CDIA_NEUANLAGE::on_buttonBox_accepted()
